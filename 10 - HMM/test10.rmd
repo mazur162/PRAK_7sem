@@ -1,0 +1,136 @@
+```{r}
+var <- 5
+data <- read.csv("Test_Data/VTB.csv",header = T)
+head(data)
+```
+```{r}
+library(xts)
+Dates <-as.Date(data[,1],"%m/%d/%y")
+    histData <- data[,2]
+    sample.xts <- as.xts(histData, order.by = Dates)
+    plot(sample.xts,type = 'l',main = "data",col= 'green' )
+```
+```{r}
+S <- data[,2]
+r <- S[2:length(S)] / S[1:length(S)-1] - 1
+sample.xts <- as.xts(r, order.by = Dates[2:length(Dates)])
+plot(sample.xts,type = 'l',main = "data",col= 'green' )
+```
+
+```{r}
+set.seed(100)
+```
+
+```{r}
+library("markovchain")
+library(depmixS4)
+```
+
+```{r}
+hmm <- depmix(r ~ 1, family = gaussian(), nstates = 3, data=data.frame(r=r))
+hmmfit <- fit(hmm, verbose = FALSE)
+```
+
+```{r}
+post_probs <- posterior(hmmfit)
+post_probs
+```
+
+```{r}
+layout(1:2)
+plot(r, type='l', main='Regime Detection', xlab='', ylab='Returns')
+matplot(post_probs[,-1], type='l', main='Regime Posterior Probabilities', ylab='Probability')
+```
+```{r}
+posterior_state =  hmmfit@posterior[,"state"]
+head(posterior_state, 10)
+```
+```{r}
+tail(posterior_state, 10)
+```
+```{r}
+hmm <- markovchainFit(data = hmmfit@posterior$state, method = "mle", name = "Alofi")
+trmatr <- hmm$estimate@transitionMatrix
+```
+```{r}
+States <- c("1", "2", "3")
+colnames(trmatr) <- States
+rownames(trmatr) <- States
+
+trmatr <- as.matrix(trmatr)
+trmatr
+```
+
+```{r}
+last_day_state <- posterior_state[length(posterior_state)]
+last_day_state
+```
+
+```{r}
+initialState <- rep(0,times = 3)
+initialState[last_day_state] <- 1
+initialState
+```
+```{r}
+ind_state = c(1:length(posterior_state))[posterior_state == last_day_state]
+state_rates = r[posterior_state == last_day_state]
+```
+
+
+```{r}
+head(ind_state,10)
+```
+
+
+```{r}
+tail(ind_state,10)
+```
+```{r}
+ head(state_rates,10)
+```
+```{r}
+tail(state_rates,10)
+```
+
+```{r}
+mc= new("markovchain", states = States,
+                 byrow = TRUE, transitionMatrix = trmatr,
+                 name = "R")
+mc
+```
+```{r}
+after3Days <- initialState * (mc * mc * mc)
+after3Days
+```
+
+```{r}
+steady_states = steadyStates(mc)
+steady_states
+```
+
+```{r}
+(VaR_hist <- quantile(state_rates,0.05))
+```
+
+```{r}
+library(PerformanceAnalytics)
+(VaR_hist <- VaR(state_rates,p=.95, method="historical"))
+```
+```{r}
+(VaR_all_returns <- VaR(r,p=.95, method="historical"))
+```
+
+```{r}
+result <- list(
+    variant = var, # номер Вашего варианта
+    posterior_state = posterior_state,
+    trmatr = trmatr, #матрица переходных вероятностей
+    after3Days = after3Days, 
+    steady_states = steady_states,
+    VaR_hist = VaR_hist,
+    VaR_all_returns=VaR_all_returns
+)
+
+saveRDS(result, paste0('result_',var,'.rds'))
+```
+
