@@ -1,6 +1,6 @@
 ```{r}
-var <- 5
-data <- read.csv("Test_Data/VTB.csv",header = T)
+var <- 9
+data <- read.csv("Test_Data/RTKM.csv",header = T)
 head(data)
 ```
 ```{r}
@@ -27,7 +27,7 @@ library(depmixS4)
 ```
 
 ```{r}
-hmm <- depmix(r ~ 1, family = gaussian(), nstates = 3, data=data.frame(r=r))
+hmm <- depmix(r ? 1, family = gaussian(), nstates = 3, data=data.frame(r=r))
 hmmfit <- fit(hmm, verbose = FALSE)
 ```
 
@@ -122,9 +122,9 @@ library(PerformanceAnalytics)
 
 ```{r}
 result <- list(
-    variant = var, # Ğ½Ğ¾Ğ¼ĞµÑ€ Ğ’Ğ°ÑˆĞµĞ³Ğ¾ Ğ²Ğ°Ñ€Ğ¸Ğ°Ğ½Ñ‚Ğ°
+    variant = var, # „Q¬„Q¬„Q¬„Qu„R¬ „Q'„Q¬„R¬„Qu„Q¬„Q¬ „Q¬„Q¬„R¬„Q„v„Q¬„Q¬„R'„Q¬
     posterior_state = posterior_state,
-    trmatr = trmatr, #Ğ¼Ğ°Ñ‚Ñ€Ğ¸Ñ†Ğ° Ğ¿ĞµÑ€ĞµÑ…Ğ¾Ğ´Ğ½Ñ‹Ñ… Ğ²ĞµÑ€Ğ¾ÑÑ‚Ğ½Ğ¾ÑÑ‚ĞµĞ¹
+    trmatr = trmatr, #„Q¬„Q¬„R'„R¬„Q„v„R+„Q¬ „Q¬„Qu„R¬„Qu„R¬„Q¬„Q¬„Q¬„R<„R¬ „Q¬„Qu„R¬„Q¬„R¬„R'„Q¬„Q¬„R¬„R'„Qu„Q¬
     after3Days = after3Days, 
     steady_states = steady_states,
     VaR_hist = VaR_hist,

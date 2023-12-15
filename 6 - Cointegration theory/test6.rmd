@@ -1,0 +1,47 @@
+```{r}
+variant <- 5
+path <- paste("Test6/var_", variant, ".csv", sep="") 
+path
+data <- read.csv(path,header = T)
+head(data)
+```
+
+```{r}
+ matplot(data,type = "l",lty = 1,col = 1:dim(data)[2],main = "Data")  
+```
+```{r}
+#install.packages("urca")
+library(urca)
+```
+```{r}
+vecm <- ca.jo(data, ecdet = "none",type="eigen",K=2,spec="longrun")
+summary(vecm)
+```
+```{r}
+vecm@cval
+```
+
+```{r}
+outmat <-rbind(vecm@cval[,2],vecm@teststat)
+legends <- c("critical values","statistics")
+barplot(outmat, main="Statistics vs Critical Value for 5% test ",legend.text = legends,beside = TRUE, col=c("red","blue"), las=2)
+h <- length(vecm@teststat)
+while (vecm@cval[,2][length(vecm@teststat) - h + 1] > vecm@teststat[length(vecm@teststat) - h + 1]) {
+   h <- h - 1
+}  
+h
+```
+```{r}
+lambda <- vecm@lambda
+z <- as.matrix(data)%*%vecm@V[,c(1:h)]
+dim(z)
+```
+```{r}
+res <- list(variant = variant,  
+            lambda=lambda,
+           h = h,
+           z = z)
+saveRDS(res,"result.rds")
+
+```
+
